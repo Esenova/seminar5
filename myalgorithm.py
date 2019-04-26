@@ -1,66 +1,65 @@
-import re
 
 
-# Class WeightedGraph
-class WeightedGraph:
-    def __init__(self, path):
-        # open file to initialize the graph
-        file = open('graph_19.txt', "r")
-        p = re.compile("\d+")
+class MyAlgorithm:
+    def adjacency_matrix(self, vertice, graph):
+        matrix = []
 
-        # initialize the graph
-        self.vertices, self.edges = map(int, p.findall(file.readline()))
-        # use adjacent matrix to represent the graph
-        self.graph = [[0] * self.vertices for _ in range(self.vertices)]
+        for i in range(0, vertice):
+            matrix.append([])
+            for j in range(0, vertice):
+                matrix[i].append(0)
 
-        # populate the graph
-        for i in range(self.edges):
-            u, v, weight = map(int, p.findall(file.readline()))
-            self.graph[u][v] = weight
-            self.graph[v][u] = weight
+        for i in range(0, len(graph)):
+            matrix[graph[i][0]][graph[i][1]] = graph[i][2]
+            matrix[graph[i][1]][graph[i][0]] = graph[i][2]
 
+        return matrix
 
-# Union find data structure for quick kruskal algorithm
-class UF:
-    def __init__(self, N):
-        self._id = [i for i in range(N)]
+    def prims(self, vertice, graph):
+        matrix = self.adjacency_matrix(vertice, graph)
 
-    # judge two node connected or not
-    def connected(self, p, q):
-        return self._find(p) == self._find(q)
+        vertex = 0
+        visited = []
+        edges = []
+        MST = []
+        minEdge = [None, None, float('inf')]
 
-    # quick union two component
-    def union(self, p, q):
-        p_root = self._find(p)
-        q_root = self._find(q)
-        if p_root == q_root:
-            return
-        self._id[p_root] = q_root
+        while len(MST) != vertice - 1:
 
-    # find the root of p
-    def _find(self, p):
-        while p != self._id[p]:
-            p = self._id[p]
-        return p
+            visited.append(vertex)
 
-    def kruskal(self, G):
-        # initialize MST
-        MST = set()
-        edges = set()
-        # collect all edges from graph G
-        for j in range(G.vertices):
-            for k in range(G.vertices):
-                if G.graph[j][k] != 0 and (k, j) not in edges:
-                    edges.add((j, k))
-        # sort all edges in graph G by weights from smallest to largest
-        sorted_edges = sorted(edges, key=lambda e: G.graph[e[0]][e[1]])
-        uf = UF(G.vertices)
-        for e in sorted_edges:
-            u, v = e
-            # if u, v already connected, abort this edge
-            if uf.connected(u, v):
-                continue
-            # if not, connect them and add this edge to the MST
-            uf.union(u, v)
-            MST.add(e)
+            for r in range(0, vertice):
+                if matrix[vertex][r] != 0:
+                    edges.append([vertex, r, matrix[vertex][r]])
+
+            for e in range(0, len(edges)):
+                if edges[e][2] < minEdge[2] and edges[e][1] not in visited:
+                    minEdge = edges[e]
+
+            edges.remove(minEdge)
+
+            MST.append(minEdge)
+
+            vertex = minEdge[1]
+            minEdge = [None, None, float('inf')]
+
         return MST
+
+
+if __name__ == '__main__':
+    a, b, c, d, e, f = 0, 1, 2, 3, 4, 5
+
+    graph = [
+        [a, b, 2],
+        [a, c, 3],
+        [b, d, 3],
+        [b, c, 5],
+        [b, e, 4],
+        [c, e, 4],
+        [d, e, 2],
+        [d, f, 3],
+        [e, f, 5]
+    ]
+
+    algorithm = MyAlgorithm()
+    print(algorithm.prims(6, graph))
